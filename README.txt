@@ -7,7 +7,7 @@ annotate_img(img_path, size1, size2)
     size2 -> middle mouse
     save image -> s
     
-    This will save a 2D array as a png in the same directory as annotate.py code. It is currently set up to make a binary array (background=0, label=1). In order to make the label visible set line 59 to 255, (mask[mask != 0 ] = 255).
+    This will save a 2D array as a png in the same directory as annotate.py code. It is currently set up to make a binary array (background=0, label=1). In order to make the label visible set line 61 to 255, (mask[mask != 0 ] = 255).
     
 annotate_dir(img_dir, dataset, subset, size1, size2)
     Takes a directory of images as input, requiring a specific directory structure that I use but shouldnt be too hard to alter if needed:
@@ -21,7 +21,7 @@ annotate_dir(img_dir, dataset, subset, size1, size2)
     save image -> s
     skip and delete image -> a
     
-the draw_circle function can be edited to change mouse bindings if necessary, unfortunately right mouse didnt work as drawing button for me hence the need for moddle mouse as the second size.
-In order to make the label visible set line 109 to 255.
+the draw_circle function can be edited to change mouse bindings if necessary.
+In order to make the label visible set line 111 to 255.
 
 For IDBottomSurvey images I use size1:   (150 for whole pmt, 7 bolt, 35 dynode ), size2: (50 for whole, 5 bolt, 10 dynode)
