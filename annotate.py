@@ -110,9 +110,9 @@ def annotate_dir(img_dir, dataset, subset, size1, size2) :
         mask[mask < 250] = 0
         mask[mask != 0 ] = 1
         
-        #Save label or delete image
+        #Save mask or delete image if it isnt good
         if skip == False :
-            cv2.imwrite(f'{img_dir}{dataset}/{subset}_masks/{subset}/{str(i)}', train_labels )
+            cv2.imwrite(f'{img_dir}{dataset}/{subset}_masks/{subset}/{str(i)}', mask )
         else :
             os.remove(f'{img_dir}{dataset}/{subset}_frames/{subset}/{str(i)}')
     cv2.destroyWindow('image')
