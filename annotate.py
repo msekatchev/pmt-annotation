@@ -33,7 +33,7 @@ def draw_circle(event,x,y,flags,param):
 #Set up for a single image 
 def annotate_img(img_path, size1, size2) :
     #Create window and put it in top left corner off screen
-    cv2.namedWindow('image')
+    cv2.namedWindow('image',cv2.WINDOW_NORMAL)
     cv2.moveWindow('image', 40, 30)
     global drawing, rdrawing, large_size, small_size, img
     large_size=size1
@@ -58,7 +58,7 @@ def annotate_img(img_path, size1, size2) :
     upper = np.array([255,0,0], dtype = "uint16")
     mask = cv2.inRange(train_labels, lower, upper)
     mask[mask < 250] = 0
-    mask[mask != 0 ] = 1
+    mask[mask != 0 ] = 255
     
     #save label in code directory
     cv2.imwrite('label.png', mask )
@@ -108,7 +108,7 @@ def annotate_dir(img_dir, dataset, subset, size1, size2) :
         upper = np.array([255,0,0], dtype = "uint16")
         mask = cv2.inRange(train_labels, lower, upper)
         mask[mask < 250] = 0
-        mask[mask != 0 ] = 1
+        mask[mask != 0 ] = 255
         
         #Save mask or delete image if it isnt good
         if skip == False :
