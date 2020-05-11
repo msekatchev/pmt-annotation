@@ -7,6 +7,7 @@ import numpy as np
 def draw_circle(event,x,y,flags,param):
     global mouseX,mouseY
     global ix, iy, drawing, rdrawing, mode
+    global count
 
 
     
@@ -33,7 +34,21 @@ def draw_circle(event,x,y,flags,param):
                 cv2.circle(img, (x, y), small_size,(255,0,0),-1)
     elif event == cv2.EVENT_MBUTTONUP:
         rdrawing = False
+   
+
     
+#    coords[count][0] = ix
+#    coords[count][1] = iy
+    if(rdrawing==True or drawing==True ):
+        coords[0].append(ix)
+        coords[1].append(iy)
+        print("PX: ", ix, "  ", iy)
+      #  print("XY: ",coords[0][count], "  ",coords[1][count])
+        print("---------------", coords)
+        count = count+1
+
+
+
 
         
 ##Set up for a single image
@@ -43,8 +58,12 @@ def draw_circle(event,x,y,flags,param):
         ##size1 - size of the 1st brush circle, in px
         ##size2 - size of the 2nd brush circle, in px
 def annotate_img(img_path, size1, size2) :
+    global count
+    count = 0
+    global coords
+    coords = [[], []]
     #Create window and put it in top left corner of screen
-    cv2.namedWindow('image',cv2.WINDOW_NORMAL) ####################### Added cv2.WINDOW_NORMAL flag to allow to resize window.
+    cv2.namedWindow('image',cv2.WINDOW_GUI_EXPANDED) ####################### Added cv2.WINDOW_NORMAL flag to allow to resize window.
     ##cv2.moveWindow('image', 40, 30) ##40 and 30 are x and y coordinates on the screen
     cv2.moveWindow('image', 0, 0)
     global drawing, rdrawing, large_size, small_size, img
@@ -75,6 +94,8 @@ def annotate_img(img_path, size1, size2) :
 
     #Make mask same colour as drawing and output binarised image
     train_labels = img[:,:,:3]
+    print("TRAIN LABELS = ")
+    print(train_labels)
     lower = np.array([254,0,0], dtype = "uint16")
     upper = np.array([255,0,0], dtype = "uint16")
     mask = cv2.inRange(train_labels, lower, upper)
@@ -83,7 +104,10 @@ def annotate_img(img_path, size1, size2) :
     
     #save label in code directory
     cv2.imwrite('label.png', mask )
+    print(mask)
     cv2.destroyWindow('image')
+
+    np.savetxt("array.txt", mask, fmt="%s")
     return
             
 
