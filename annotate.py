@@ -56,7 +56,7 @@ def draw_circle(event,x,y,flags,param):
         ## click on image to grab pixel coordinates
         ## s to close image and exit program
         ## r to write coordinates to file (you will be prompted for the PMT feature ID)
-def annotate_img(img_path, size1, size2) :
+def annotate_img(img_path, size1, size2, initials) :
     global recordCoords 
     global count
     global inputting
@@ -91,7 +91,7 @@ def annotate_img(img_path, size1, size2) :
     while(1):
         cv2.imshow('image',img)     ##keep displaying the image even if the user exits.
         k = cv2.waitKey(20) & 0xFF
-        if(k == ord('s')):           ##if the s key is pressed, exit the loop.
+        if(k == ord('s')):          ##if the s key is pressed, exit the loop.
             #cv2.destroyWindow('image')
             break
 
@@ -100,9 +100,10 @@ def annotate_img(img_path, size1, size2) :
         if(k==ord('r')):
             inputting = True ##used to pause the draw_circle function from recording more coordinates
             print("Recording: Pixels: ", ix, "x  ", iy,"y")
-            pmtID = input("Input PMT feature ID to add it to the list, or input 'd' to not register: ")
+            pmtID = input("Input PMT feature ID to add it to the list, or input 'd' to not register:\n")
+            print("\n")
             if(pmtID != 'd'):
-                file.write("%s\t%d\t%d\n" %(pmtID, ix, iy))
+                file.write("%s\t%s\t%d\t%d\t%s\n" %(filename,pmtID, ix, iy,initials))
                 coords[0].append(ix)
                 coords[1].append(iy)
                 #print("PX: ", ix, "  ", iy)
@@ -156,15 +157,29 @@ def annotate_img(img_path, size1, size2) :
 #       size1 - size of the 1st brush circle, in px
 #       size2 - size of the 2nd brush circle, in px
 #Set up for directory of images with file structure for image segmentation
-def annotate_dir(img_dir, dataset, subset, size1, size2) :
+def annotate_dir(img_dir, dataset, subset, size1, size2,initials,filename) :
     #Create window and put it in top left corner off screen
+    global inputting
+    global count
+    count = 0
+    inputting = False
     cv2.namedWindow('image',cv2.WINDOW_NORMAL)
     cv2.moveWindow('image', 40, 30)
     global drawing, rdrawing, large_size, small_size, img
     large_size=size1
     small_size=size2
 
+    global coords
+    coords = [[], []]
     
+    save_path = os.path.join(img_dir+dataset,subset+"_masks",subset,filename+".txt")
+
+
+    file = open("%s" %save_path,"w")
+
+    print("Saving to: ",save_path)
+
+
     cv2.setMouseCallback('image',draw_circle)
     #Array of names in directory to iterate over
     f = []
@@ -191,6 +206,22 @@ def annotate_dir(img_dir, dataset, subset, size1, size2) :
                 skip = True
                 #cv2.destroyWindow('image')
                 break
+###############################Add line to text output###############################
+            if k == ord('r'):
+                inputting = True
+                print("Recording: Pixels: ", ix, "x  ", iy,"y")
+                imageName = os.path.splitext(i)[0]
+                pmtID = input("Input PMT feature ID to add it to the list, or input 'd' to not register:\n")
+                print("\n")
+                if(pmtID!='d'):
+                    file.write("%s\t%s\t%d\t%d\t%s\n" %(imageName,pmtID, ix, iy,initials))
+                    coords[0].append(ix)
+                    coords[1].append(iy)
+                    count = count+1
+                inputting = False
+###############################Add line to text output###############################
+    
+###############################Image Output##########################################
         #Make mask same colour as drawing and output binarised image
         train_labels = img[:,:,:3]
         lower = np.array([254,0,0], dtype = "uint16")
@@ -203,4 +234,6 @@ def annotate_dir(img_dir, dataset, subset, size1, size2) :
             cv2.imwrite(f'{img_dir}{dataset}/{subset}_masks/{subset}/{str(i)}', mask )
         else :
             os.remove(f'{img_dir}{dataset}/{subset}_frames/{subset}/{str(i)}')
+###############################Image Output##########################################
+    file.close
     cv2.destroyWindow('image')
