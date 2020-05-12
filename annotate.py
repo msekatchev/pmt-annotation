@@ -15,11 +15,7 @@ def draw_circle(event,x,y,flags,param):
             ix,iy = x,y
             cv2.circle(img, (x, y), large_size,(255,0,0),-1)
             print(ix, "x  ", iy,"y")
-            ##pmtID = input("Input PMT feature ID (or d to delete): ")
-
-    #    elif event == cv2.EVENT_MOUSEMOVE:
-    #        if drawing == True:
-    #                cv2.circle(img, (x, y), large_size,(255,0,0),-1)
+          
         elif event == cv2.EVENT_LBUTTONUP:
             drawing = False
 
@@ -30,9 +26,6 @@ def draw_circle(event,x,y,flags,param):
             cv2.circle(img, (x, y), small_size,(255,0,0),-1)
             print(ix, "x  ", iy,"y")
 
-    #    elif event == cv2.EVENT_MOUSEMOVE:
-    #        if rdrawing == True:
-    #                cv2.circle(img, (x, y), small_size,(255,0,0),-1)
         elif event == cv2.EVENT_MBUTTONUP:
             rdrawing = False
        
@@ -48,6 +41,7 @@ def draw_circle(event,x,y,flags,param):
         ##img_path - name and location of the image, example "B.jpg"
         ##size1 - size of the 1st brush circle, in px
         ##size2 - size of the 2nd brush circle, in px
+        ##initials - First name and last name initials of the person doing the labelling. Recorded next to every PMT feature ID line in the text file.
     ##outputs
         ##label.jpg - A map of all the features in binary (white on black)
         ##{image_name}.txt - A text file. Each line contains a PMT feature ID and its pixel coordinates on the image. The text file has the same name as the image.
@@ -57,7 +51,6 @@ def draw_circle(event,x,y,flags,param):
         ## s to close image and exit program
         ## r to write coordinates to file (you will be prompted for the PMT feature ID)
 def annotate_img(img_path, size1, size2, initials) :
-    global recordCoords 
     global count
     global inputting
     inputting = False
@@ -65,8 +58,8 @@ def annotate_img(img_path, size1, size2, initials) :
     global coords
     coords = [[], []]
     #Create window and put it in top left corner of screen
-    cv2.namedWindow('image',cv2.WINDOW_GUI_EXPANDED) ####################### Added cv2.WINDOW_NORMAL flag to allow to resize window.
-    ##cv2.moveWindow('image', 40, 30) ##40 and 30 are x and y coordinates on the screen
+    cv2.namedWindow('image',cv2.WINDOW_GUI_EXPANDED) # Added cv2.WINDOW_NORMAL flag to allow to resize window.
+    #cv2.moveWindow('image', 40, 30) ##40 and 30 are x and y coordinates on the screen
     cv2.moveWindow('image', 0, 0)
     global drawing, rdrawing, large_size, small_size, img
     large_size=size1
@@ -106,8 +99,6 @@ def annotate_img(img_path, size1, size2, initials) :
                 file.write("%s\t%s\t%d\t%d\t%s\n" %(filename,pmtID, ix, iy,initials))
                 coords[0].append(ix)
                 coords[1].append(iy)
-                #print("PX: ", ix, "  ", iy)
-                #print("XY: ",coords[0][count], "  ",coords[1][count])
                 #print(coords)
                 count = count+1 ##currently unused, but can be used to track number of entries in the file.
                 #recordCoors = False
@@ -151,11 +142,12 @@ def annotate_img(img_path, size1, size2, initials) :
 #Set up for directory of images with file structure for image segmentation
 #Function: annotate_dir
 #   input:
-#       img_dir - working directory
-#       dataset
-#       subset - Preffix for the two folders inside img_dir where images are located and labels are saved. Folders are subset_frames and subset_masks
-#       size1 - size of the 1st brush circle, in px
-#       size2 - size of the 2nd brush circle, in px
+#       img_dir & dataset - working directory. (directory named {img_dir}{dataset}).
+#       subset - Preffix for the two folders inside img_dir where images are located and labels are saved. Folders are subset_frames and subset_masks.
+#       size1 - size of the 1st brush circle, in px.
+#       size2 - size of the 2nd brush circle, in px.
+#       initials - First name and last name initials of the person doing the labelling. Recorded next to every PMT feature ID line in the text file.
+#       filename - The name of the .txt file that will be created.
 #Set up for directory of images with file structure for image segmentation
 def annotate_dir(img_dir, dataset, subset, size1, size2,initials,filename) :
     #Create window and put it in top left corner off screen
