@@ -106,7 +106,10 @@ def annotate_img(img_path, size1, size2, initials) :
         if(k==ord('r')):
             if(pmtSelected == True):
                 print("Recording ", pmtID, "-",startingVal, " ",ix, "x  ", iy,"y\n")
-                file.write("%s\t%s-%d\t%d\t%d\t%s\n" %(filename,pmtID,startingVal, ix, iy,initials))
+                if(startingVal<10 or startingVal == 0):
+                    file.write("%s\t%s-0%d\t%d\t%d\t%s\n" %(filename,pmtID,startingVal, ix, iy,initials))
+                else:
+                    file.write("%s\t%s-%d\t%d\t%d\t%s\n" %(filename,pmtID,startingVal, ix, iy,initials))
                 startingVal = startingVal+1   
             else:
                 inputting = True ##used to pause the draw_circle function from recording more coordinates
@@ -120,7 +123,10 @@ def annotate_img(img_path, size1, size2, initials) :
                         
                     print("Recording ", pmtID, "-",startingVal, " ",ix, "x  ", iy,"y\n")
                     print("Record another selected point by pressing r.\nPress x to skip recording a number.\nPress f to finish recording features for this PMT.")
-                    file.write("%s\t%s-%d\t%d\t%d\t%s\n" %(filename,pmtID,startingVal, ix, iy,initials))
+                    if(startingVal<10 or startingVal == 0):
+                        file.write("%s\t%s-0%d\t%d\t%d\t%s\n" %(filename,pmtID,startingVal, ix, iy,initials))
+                    else:
+                        file.write("%s\t%s-%d\t%d\t%d\t%s\n" %(filename,pmtID,startingVal, ix, iy,initials))
                     startingVal = startingVal+1
                     coords[0].append(ix)
                     coords[1].append(iy)
