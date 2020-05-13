@@ -54,6 +54,10 @@ def annotate_img(img_path, size1, size2, initials) :
     global count
     global inputting
     inputting = False
+    global pmtSelected
+    pmtSelected = False
+    global nextPMT
+    nextPMT = False
     count = 0
     global coords
     coords = [[], []]
@@ -90,19 +94,40 @@ def annotate_img(img_path, size1, size2, initials) :
 
         
 ###############################Add line to text output###############################
+        if(k==ord('f')):
+           nextPMT = True
+           pmtSelected = False
+           print("Ended recording for PMT ",pmtID, ". Record first feature for another by selecting a point and pressing r.")
+
+        elif(k==ord('x')):
+           print("Skipping feature #", startingVal)
+           startingVal = startingVal+1
+
         if(k==ord('r')):
-            inputting = True ##used to pause the draw_circle function from recording more coordinates
-            print("Recording: Pixels: ", ix, "x  ", iy,"y")
-            pmtID = input("Input PMT feature ID to add it to the list, or input 'd' to not register:\n")
-            print("\n")
-            if(pmtID != 'd'):
-                file.write("%s\t%s\t%d\t%d\t%s\n" %(filename,pmtID, ix, iy,initials))
-                coords[0].append(ix)
-                coords[1].append(iy)
-                #print(coords)
-                count = count+1 ##currently unused, but can be used to track number of entries in the file.
-                #recordCoors = False
-            inputting = False
+            if(pmtSelected == True):
+                print("Recording ", pmtID, "-",startingVal, " ",ix, "x  ", iy,"y\n")
+                file.write("%s\t%s-%d\t%d\t%d\t%s\n" %(filename,pmtID,startingVal, ix, iy,initials))
+                startingVal = startingVal+1   
+            else:
+                inputting = True ##used to pause the draw_circle function from recording more coordinates
+                pmtID = input("Input PMT number to add it to the list, or input 'd' to not register:\n")
+                if(pmtID != 'd'):
+                    startingFeature = input("Input starting feature number, or press enter to start from 0.\n")
+                    if(not startingFeature):
+                        startingVal = 0
+                    else:
+                        startingVal = int(startingFeature)
+                        
+                    print("Recording ", pmtID, "-",startingVal, " ",ix, "x  ", iy,"y\n")
+                    print("Record another selected point by pressing r.\nPress x to skip recording a number.\nPress f to finish recording features for this PMT.")
+                    file.write("%s\t%s-%d\t%d\t%d\t%s\n" %(filename,pmtID,startingVal, ix, iy,initials))
+                    startingVal = startingVal+1
+                    coords[0].append(ix)
+                    coords[1].append(iy)
+                    pmtSelected = True
+                    nextPMT = True
+                print("\n")
+                inputting = False
 ###############################Add line to text output###############################
 
             
