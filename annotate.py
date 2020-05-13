@@ -31,6 +31,9 @@ def draw_circle(event,x,y,flags,param):
        
 
 
+
+
+
                 
 
 
@@ -180,7 +183,7 @@ def annotate_img(img_path, size1, size2, initials) :
 #       initials - First name and last name initials of the person doing the labelling. Recorded next to every PMT feature ID line in the text file.
 #       filename - The name of the .txt file that will be created.
 #Set up for directory of images with file structure for image segmentation
-def annotate_dir(img_dir, dataset, subset, size1, size2,initials,filename) :
+def annotate_dir(img_dir, size1, size2,initials,filename) :
     #Create window and put it in top left corner off screen
     global inputting
     global count
@@ -194,9 +197,14 @@ def annotate_dir(img_dir, dataset, subset, size1, size2,initials,filename) :
 
     global coords
     coords = [[], []]
-    
-    save_path = os.path.join(img_dir+dataset,subset+"_masks",subset,filename+".txt")
 
+    text_save_path = os.path.join(img_dir+"_texts")
+    mask_save_path = os.path.join(img_dir+"_masks")    
+    if not os.path.exists(text_save_path):
+        os.mkdir(text_save_path)
+    if not os.path.exists(mask_save_path):
+        os.mkdir(mask_save_path)
+    save_path = os.path.join(img_dir+"_texts",filename+".txt")
 
     file = open("%s" %save_path,"w")
 
@@ -206,7 +214,7 @@ def annotate_dir(img_dir, dataset, subset, size1, size2,initials,filename) :
     cv2.setMouseCallback('image',draw_circle)
     #Array of names in directory to iterate over
     f = []
-    for (dirpath, dirnames, filenames) in os.walk(f'{img_dir}{dataset}/{subset}_frames/{subset}'):
+    for (dirpath, dirnames, filenames) in os.walk(f'{img_dir}'):
         f.extend(filenames)
         break
     
@@ -216,7 +224,7 @@ def annotate_dir(img_dir, dataset, subset, size1, size2,initials,filename) :
         skip = False
         drawing = False
         rdrawing = False
-        img = cv2.imread(f'{img_dir}{dataset}/{subset}_frames/{subset}/{str(i)}')
+        img = cv2.imread(f'{img_dir}/{str(i)}')
         
         #Drawing and keyboard callbacks a to skip and delete, s to save image
         while(1):
@@ -254,9 +262,9 @@ def annotate_dir(img_dir, dataset, subset, size1, size2,initials,filename) :
         mask[mask != 0 ] = 255
         #Save mask or delete image if it isnt good
         if skip == False :
-            cv2.imwrite(f'{img_dir}{dataset}/{subset}_masks/{subset}/{str(i)}', mask )
+            cv2.imwrite(f'{img_dir}_masks/{str(i)}', mask )
         else :
-            os.remove(f'{img_dir}{dataset}/{subset}_frames/{subset}/{str(i)}')
+            os.remove(f'{img_dir}_masks/{str(i)}')
 ###############################Image Output##########################################
     file.close
     cv2.destroyWindow('image')
