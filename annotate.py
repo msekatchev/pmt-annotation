@@ -1,7 +1,7 @@
 import cv2
 import os
 import numpy as np
-
+import shutil
 
 #Set up callbacks for drawing circles on click and drag, bound to left and middle mouse 
 def draw_circle(event,x,y,flags,param):
@@ -54,6 +54,7 @@ def draw_circle(event,x,y,flags,param):
         ## s to close image and exit program
         ## r to write coordinates to file (you will be prompted for the PMT feature ID)
 def annotate_img(img_path, size1, size2, initials) :
+    print("image path is: ",img_path)
     global count
     global inputting
     inputting = False
@@ -87,7 +88,6 @@ def annotate_img(img_path, size1, size2, initials) :
 
     print("\n Click on image to grab pixel coordinates.\n Press s to close image and exit program.\n Press r to write coordinates to file. \n    (you will be prompted for the PMT feature ID)")
     
-
     while(1):
         cv2.imshow('image',img)     ##keep displaying the image even if the user exits.
         k = cv2.waitKey(20) & 0xFF
@@ -151,9 +151,13 @@ def annotate_img(img_path, size1, size2, initials) :
     mask = cv2.inRange(train_labels, lower, upper)
     mask[mask < 250] = 0
     mask[mask != 0 ] = 255 ##set =1 for binary or =255 for visible white
-
+    maskName = os.path.join(filename+'.png')
+    print("MASKNAME: ",maskName)
     #save label in code directory
-    cv2.imwrite('label.png', mask )
+    cv2.imwrite(maskName, mask )
+    #cv2.imwrite(f'{str(maskName)}',mask)
+    #print("SAVED")
+    #cv2.imwrite(maskName, mask )
     #print(mask)
 ###############################Image Output##########################################
 
@@ -183,7 +187,123 @@ def annotate_img(img_path, size1, size2, initials) :
 #       initials - First name and last name initials of the person doing the labelling. Recorded next to every PMT feature ID line in the text file.
 #       filename - The name of the .txt file that will be created.
 #Set up for directory of images with file structure for image segmentation
-def annotate_dir(img_dir, size1, size2,initials,filename) :
+def annotate_dir(img_dir, size1, size2,initials) :
+    #Create window and put it in top left corner off screen
+
+ 
+####### Creating text and mask save directories #######
+    text_save_path = os.path.join(img_dir+"_texts")
+    mask_save_path = os.path.join(img_dir+"_masks")    
+    if not os.path.exists(text_save_path):
+        os.mkdir(text_save_path)
+    if not os.path.exists(mask_save_path):
+        os.mkdir(mask_save_path)
+    #save_path = os.path.join(img_dir+"_texts",filename+".txt")
+
+    #file = open("%s" %save_path,"w")
+
+    print("Saving texts to: ",text_save_path)
+    print("Saving masks to: ",mask_save_path)
+
+    #Array of names in directory to iterate over
+    f = []
+    for (dirpath, dirnames, filenames) in os.walk(f'{img_dir}'):
+        f.extend(filenames)
+        break
+    
+    print(f)
+    
+    for i in f :
+        skip = False
+
+        #img = cv2.imread(f'{img_dir}/{str(i)}')
+        print("IMG=",i)
+        base = os.path.basename(i)
+        imageName = os.path.splitext(base)[0]
+        imageLocation = os.path.join(img_dir,i)
+
+        annotate_img(imageLocation,size1,size2,initials)
+
+
+        textName = os.path.join(imageName+".txt")
+        maskName = os.path.join(imageName+".png")
+        print("------- Moving ",textName, "to ", text_save_path)
+        #sleep(500)
+        shutil.move(textName,text_save_path)
+        shutil.move(maskName,mask_save_path)
+
+        #Drawing and keyboard callbacks a to skip and delete, s to save image
+        
+         
+###############################Add line to text output###############################
+            
+###############################Add line to text output###############################
+    
+###############################Image Output##########################################
+      
+###############################Image Output##########################################
+    #file.close
+    #cv2.destroyWindow('image')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Set up for directory of images with file structure for image segmentation
+#Function: annotate_dir
+#   input:
+#       img_dir & dataset - working directory. (directory named {img_dir}{dataset}).
+#       subset - Preffix for the two folders inside img_dir where images are located and labels are saved. Folders are subset_frames and subset_masks.
+#       size1 - size of the 1st brush circle, in px.
+#       size2 - size of the 2nd brush circle, in px.
+#       initials - First name and last name initials of the person doing the labelling. Recorded next to every PMT feature ID line in the text file.
+#       filename - The name of the .txt file that will be created.
+#Set up for directory of images with file structure for image segmentation
+def annotate_dir_old(img_dir, size1, size2,initials,filename) :
     #Create window and put it in top left corner off screen
     global inputting
     global count
@@ -268,3 +388,4 @@ def annotate_dir(img_dir, size1, size2,initials,filename) :
 ###############################Image Output##########################################
     file.close
     cv2.destroyWindow('image')
+
