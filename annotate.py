@@ -18,7 +18,7 @@ def draw_circle(event,x,y,flags,param):
           
         elif event == cv2.EVENT_LBUTTONUP:
             drawing = False
- 
+
 
         if event == cv2.EVENT_MBUTTONDOWN:
             rdrawing = True
