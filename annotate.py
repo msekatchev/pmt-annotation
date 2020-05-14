@@ -22,7 +22,7 @@ def draw_circle(event,x,y,flags,param):
 
         if event == cv2.EVENT_MBUTTONDOWN:
             rdrawing = True
-            ix,iy = x,y
+            ix,iy = x,y 
             cv2.circle(img, (x, y), small_size,(255,0,0),-1)
             print(ix, "x  ", iy,"y")
 
