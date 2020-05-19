@@ -65,7 +65,7 @@ def annotate_img(img_path, initials, size1=1, size2=1) :
     nextPMT = False
     count = 0
     global coords
-    coords = [[], []]
+    coords = [[],[]]
 
     #Extract the name of the image from the inputted path to the image.
     base = os.path.basename(img_path)
@@ -89,12 +89,22 @@ def annotate_img(img_path, initials, size1=1, size2=1) :
     rdrawing=False
 
     print("\n Click on image to grab pixel coordinates.\n Press s to close image and exit program.\n Press r to write coordinates to file. \n    (you will be prompted for the PMT feature ID)")
-    
+
+
+
     while(1):
         cv2.imshow(filename,img)     ##keep displaying the image even if the user exits.
         k = cv2.waitKey(20) & 0xFF
         if(k == ord('s')):          ##if the s key is pressed, exit the loop.
-            #cv2.destroyWindow(filename)
+            print("Saving to: ",filename+".txt\n")
+            for i in range(len(coords[0])):
+                if(coords[0][i]!="N"):
+                    writestartingVal = f'{i:02}'
+
+                    print(filename+"\t"+writepmtID+"-"+writestartingVal+"\t"+str(coords[0][i])+"\t"+str(coords[1][i])+"\t"+initials+"\n")
+                    file.write("%s\t%s-%s\t%s\t%s\t%s\n" %(filename,writepmtID,writestartingVal, str(coords[0][i]), str(coords[1][i]),initials))
+                    coords[0][i]="N"
+                    coords[1][i]="N"  
             break
 
         
@@ -102,21 +112,47 @@ def annotate_img(img_path, initials, size1=1, size2=1) :
         if(k==ord('f')):
            nextPMT = True
            pmtSelected = False
+           print("Saving to: ",filename+".txt\n")
+           
+           
+           for i in range(len(coords[0])):
+                if(coords[0][i]!="N"):
+                    writestartingVal = f'{i:02}' 
+                    print(filename+"\t"+writepmtID+"-"+writestartingVal+"\t"+str(coords[0][i])+"\t"+str(coords[1][i])+"\t"+initials+"\n")
+                    file.write("%s\t%s-%s\t%s\t%s\t%s\n" %(filename,writepmtID,writestartingVal, str(coords[0][i]), str(coords[1][i]),initials))
+                    coords[0][i]="N"
+                    coords[1][i]="N"  
            print("Ended recording for PMT ",str(pmtID)+". Record first feature for another by selecting a point and pressing r.")
-
-        elif(k==ord('x')):
-           print("Skipping feature #", startingVal)
+        elif(k==ord('n')):
            startingVal = startingVal+1
+           print("Ready to record", startingVal)
+
+        elif(k==ord('b')):
+            if(startingVal==0):
+                print("Error, can't decrement feature ID below 0.")
+            else:
+                startingVal = startingVal-1
+                print("Ready to record",startingVal)
 
         if(k==ord('r')):
             if(pmtSelected == True):
                 
-                writepmtID = pmtID.zfill(5)
-                writestartingVal = f'{startingVal:02}'   
+                #startingVal = startingVal+1
+                writestartingVal = f'{startingVal:02}'
+                writepmtID = pmtID.zfill(5)   
                 print("Recording ", writepmtID+"-"+writestartingVal, ix, "x", iy,"y\n")
-   
-                file.write("%s\t%s-%s\t%d\t%d\t%s\n" %(filename,writepmtID,writestartingVal, ix, iy,initials))
-                startingVal = startingVal+1   
+                    
+                
+                
+                while(startingVal>=len(coords[0])):
+                    coords[0].append("N")
+                    coords[1].append("N")
+
+                coords[0][startingVal] = ix
+                coords[1][startingVal] = iy
+                
+                
+
             else:
                 inputting = True ##used to pause the draw_circle function from recording more coordinates
                 pmtID = input("Input PMT number to add it to the list, or input 'd' to not register:\n-->")
@@ -132,20 +168,26 @@ def annotate_img(img_path, initials, size1=1, size2=1) :
                     print("Recording ", writepmtID+"-"+writestartingVal, ix, "x", iy,"y\n")
                     print("Record another selected point by pressing r.\nPress x to skip recording a number.\nPress f to finish recording features for this PMT.")
                     
+                    while(startingVal>=len(coords[0])):
+                        coords[0].append("N")
+                        coords[1].append("N")
+
+                    coords[0][startingVal] = ix
+                    coords[1][startingVal] = iy
 
                     
-                    file.write("%s\t%s-%s\t%d\t%d\t%s\n" %(filename,writepmtID,writestartingVal, ix, iy,initials))
-                    startingVal = startingVal+1
-                    coords[0].append(ix)
-                    coords[1].append(iy)
+                    
+                    #startingVal = startingVal+1
+
                     pmtSelected = True
                     nextPMT = True
                 print("\n")
                 inputting = False
 ###############################Add line to text output###############################
 
-            
-    file.close
+    #print(coords)
+    file.close   
+
 ###############################Image Output##########################################
     #Make mask same colour as drawing and output binarised image
     train_labels = img[:,:,:3]
@@ -231,7 +273,7 @@ def annotate_dir(img_dir, initials, size1=1, size2=1) :
         if(os.path.exists(os.path.join(text_save_path,textName))):
             print("File", textName, "already exists in", text_save_path+". Would you like to overwrite it?")            
             overwriteText = input("(y/n)\n-->")
-            if(overwriteText == "y" or overwriteText == "Y"):
+            if(overwriteText.lower() == "y"):
                 saveText = True
                 os.remove(os.path.join(text_save_path,textName))
             else:
@@ -252,7 +294,7 @@ def annotate_dir(img_dir, initials, size1=1, size2=1) :
         if(os.path.exists(os.path.join(mask_save_path,maskName))):
             print("File", maskName, "already exists in", mask_save_path+". Would you like to overwrite it?")
             overwriteMask = input("(y/n)\n-->")
-            if(overwriteMask == "y" or overwriteMask == "Y"):
+            if(overwriteMask.lower() == "y"):
                 saveMask=True
                 os.remove(os.path.join(mask_save_path,maskName))
             else:
