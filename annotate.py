@@ -3,7 +3,18 @@ import os
 import numpy as np
 import shutil
 
-#annotate_img("B.jpg","MS",101,10)
+#annotate_img("B.jpg","MS",10,120)
+
+global COLOR
+COLOR = 255
+
+global RED
+RED = COLOR,0,0
+
+global BLUE
+BLUE = 0,0,COLOR
+
+
 
 #Set up callbacks for drawing circles on click and drag, bound to left and middle mouse 
 def draw_circle(event,x,y,flags,param):
@@ -15,10 +26,7 @@ def draw_circle(event,x,y,flags,param):
         if event == cv2.EVENT_LBUTTONDOWN:
             drawing = True
             ix,iy = x,y
-            if(color == True):
-                cv2.circle(img, (x, y), large_size,(0,0,255),-1)
-            else:
-                cv2.circle(img, (x, y), large_size,(255,0,0),-1)
+            cv2.circle(img, (x, y), small_size,BLUE,-1)
             print(ix, "x  ", iy,"y")
           
         elif event == cv2.EVENT_LBUTTONUP:
@@ -28,10 +36,8 @@ def draw_circle(event,x,y,flags,param):
         if event == cv2.EVENT_MBUTTONDOWN:
             rdrawing = True
             ix,iy = x,y
-            if(color==True):
-                cv2.circle(img, (x, y), small_size,(0,0,255),-1)
-            else:
-                cv2.circle(img, (x, y), small_size,(255,0,0),-1)
+            cv2.circle(img, (x, y), large_size,RED,-1)
+
             print(ix, "x", iy,"y")
 
         elif event == cv2.EVENT_MBUTTONUP:
@@ -56,11 +62,10 @@ def draw_circle(event,x,y,flags,param):
         ## s to close image and exit program
         ## r to write coordinates to file (you will be prompted for the PMT feature ID)
         ## f to select new PMT
-        ## c to switch labelling color between blue and red.
+        ## Left-click to label with red, middle-click to label with blue.
 def annotate_img(img_path, initials, size1=1, size2=1) :
     print("image path is: ",img_path)
-    global color
-    color = False
+
     global count
     global inputting
     inputting = False
@@ -86,8 +91,8 @@ def annotate_img(img_path, initials, size1=1, size2=1) :
     cv2.moveWindow(filename, 500, 0)
     cv2.resizeWindow(filename, 1200, 900)
     global drawing, rdrawing, large_size, small_size, img
-    large_size=size1
-    small_size=size2
+    large_size=size2
+    small_size=size1
     
     img = cv2.imread(img_path) ##read the image specified in the input
     cv2.setMouseCallback(filename,draw_circle) ##Link mouse position and button states to the draw_circle function.
@@ -96,7 +101,7 @@ def annotate_img(img_path, initials, size1=1, size2=1) :
     drawing=False
     rdrawing=False
 
-    print("\n Click on image to grab pixel coordinates.\n Press s to close image and exit program.\n Press r to write coordinates to file. \n    (you will be prompted for the PMT feature ID)\n Press c to toggle labelling color between red and blue (currently set to blue).")
+    print("\n Click on image to grab pixel coordinates.\n Press s to close image and exit program.\n Press r to write coordinates to file. \n    (you will be prompted for the PMT feature ID)\n Press left mouse button to label in red, and middle click to label in blue.")
 
 
 
@@ -115,13 +120,6 @@ def annotate_img(img_path, initials, size1=1, size2=1) :
                     coords[1][i]="N"  
             break
 
-        if(k==ord('c')):
-            if(color == True):
-                color = False
-                print("Color switched to blue")
-            else:
-                color = True
-                print("Color switched to red")
 ###############################Add line to text output###############################
         if(k==ord('f')):
            nextPMT = True
@@ -203,49 +201,39 @@ def annotate_img(img_path, initials, size1=1, size2=1) :
                 inputting = False
 ###############################Add line to text output###############################
 
-    #print(coords)
     file.close   
 
 ###############################Image Output##########################################
     #Make mask same colour as drawing and output binarised image
 
+    #Create a dictionary listing all drawing colors
+    colorDictionary = {"color1": RED,"color2": BLUE}
 
-    #Make mask same colour as drawing and output binarised image
     train_labels = img[:,:,:3]
-    lower_blue = np.array([254,0,0], dtype = "uint16")
-    upper_blue = np.array([255,0,0], dtype = "uint16")
-    mask_blue = cv2.inRange(train_labels, lower_blue, upper_blue)
-    mask_blue[mask_blue < 250] = 0
-    #mask_blue[mask_blue != 0 ] = 255
-    mask_blue[mask_blue != 0 ] = 1
+    counter = 1
+    #Create the empty mask
+    mask = 0
+    #Add drawings from every color in the dictionary to the mask 
+    for color in colorDictionary:
+        color_thresh = np.array(colorDictionary[color], dtype = "uint16")
+        mask_color =  cv2.inRange(train_labels, color_thresh, color_thresh) 
+        mask_color[mask_color < COLOR] = 0
+        mask_color[mask_color!=0] = counter
+        counter = counter+1
+        mask = np.add(mask, mask_color)
 
-
-    lower_red = np.array([0,0,254], dtype = "uint16")
-    upper_red = np.array([0,0,255], dtype = "uint16")
-    mask_red = cv2.inRange(train_labels, lower_red, upper_red)
-    mask_red[mask_red < 250] = 0
-    #mask_red[mask_red != 0 ] = 255  
-    mask_red[mask_red != 0 ] = 2
-    #Add the masks together to get array of pixel labels
-    mask = np.add(mask_red, mask_blue)
-    #mask = cv2.bitwise_or(mask_red,mask_blue)
-    #print(np.unique(mask))
 
     maskName = os.path.join(filename+'.png')
-    print("MASKNAME: ",maskName)
-    #save label in code directory
+    print("Saving mask to: ",maskName)
+    #save mask in code directory
     cv2.imwrite(maskName, mask )
-    #print(mask)
 
 ###############################Image Output##########################################
 
     cv2.destroyWindow(filename)
 
-#    np.savetxt("array.txt", coords, fmt="%s") #for later implementing feature to save to array.
     return
             
-
-
 
 
 
